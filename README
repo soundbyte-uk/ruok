@@ -1,0 +1,15 @@
+ruok: Resisting ugly output khaos
+
+Basically making sure text files are ok, to resist the most basic ways in which badly-configured editors start to sabotage and disrupt changes later in a project's lifespan.
+
+Files should always end with a trailing newline.
+
+Lines with trailing spaces are almost always wrong.
+
+It's ideal to check for these problems, either with a pre-commit hook or a pre-receive hook, to reject untidy changes, get editors fixed quickly and keep things neat so that a future person doesn't have to fix them later -- or deal with a messy diff when they're in the middle of trying to do a big unrelated automated change (for example).
+
+This is not a Git hook, but is just a simple program for quickly checking a list of text files, which can be used as part of a Git hook.
+
+I'm using intentionally fun and nasty Perl (with Bourne shell unit tests) to celebrate and mourn the Old Ways.
+
+Perl is underappreciatedly fast, stable and lightweight, and is still included in many small systems where other more "modern" interpreted languages are not.

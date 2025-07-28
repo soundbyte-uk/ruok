@@ -1,0 +1,12 @@
+#!/usr/bin/env perl
+
+my $alert = 1;
+my $bad = 0;
+
+while (<>) {
+	$alert and m[ $] and print "${ARGV}: trailing spaces, line ${.}\n" and $bad=1 and $alert=0;
+	m[\n$] or print "${ARGV}: missing final newline\n" and $bad=1;
+	$alert=true and $.=0 if eof;
+}
+
+exit 1 if $bad;

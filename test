@@ -1,0 +1,24 @@
+#!/bin/sh
+
+out=`./ruok tests/legit`
+if [ $? -ne 0 ]; then
+	>&2 echo "Legitness test failed to exit 0"
+	exit 1
+fi
+if [ -n "$out" ]; then
+	>&2 echo "Legitness test produced spurious output"
+	exit 1
+fi
+
+expected='tests/noeol: missing final newline
+tests/trailing-spaces: trailing spaces, line 4'
+
+out=`./ruok tests/*`
+if [ $? -ne 1 ]; then
+	>&2 echo "Problem tests failed to exit 1"
+	exit 1
+fi
+if [ "$out" != "$expected" ]; then
+	>&2 echo "Problem tests did not produce expected output"
+	exit 1
+fi
