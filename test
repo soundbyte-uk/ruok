@@ -10,7 +10,8 @@ if [ -n "$out" ]; then
 	exit 1
 fi
 
-expected='tests/noeol: missing final newline
+expected='tests/mixed-indent: mixed indentation, line 3
+tests/noeol: missing final newline
 tests/trailing-spaces: trailing spaces, line 4'
 
 out=`./ruok tests/*`
