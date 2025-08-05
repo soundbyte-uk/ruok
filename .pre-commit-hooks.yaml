@@ -1,0 +1,6 @@
+- id: check-text-files
+  name: check for badly-formatted text files
+  description: checks for badly-formatted text files
+  entry: ./ruok
+  language: script
+  stages: [pre-commit, pre-push, manual]
