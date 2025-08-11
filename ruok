@@ -7,7 +7,7 @@ my $indent = '';
 
 while (<>) {
 	$alert_ts and m[ $] and print "${ARGV}: trailing spaces, line ${.}\n" and $bad=1 and $alert_ts=0;
-	$alert_ind and m[^(\s).*\n$] and $indent = ($indent || $1) and ($indent ne $1) and print "${ARGV}: mixed indentation, line ${.}\n" and $bad=1 and $alert_ind=0;
+	$alert_ind and m[^(\s).*\n$] and $indent = ($indent || $1) and (($indent ne $1) or not m[^(\s)(\1*)(\S.*)?\n$]) and print "${ARGV}: mixed indentation, line ${.}\n" and $bad=1 and $alert_ind=0;
 	m[\n$] or print "${ARGV}: missing final newline\n" and $bad=1;
 	$alert_ts=1 and $alert_ind=1 and $.=0 or $indent='' if eof;
 }
