@@ -2,13 +2,17 @@ ruok: Resisting ugly output khaos
 
 Basically making sure text files are ok, to resist the most basic ways in which badly-configured editors start to sabotage and disrupt changes later in a project's lifespan.
 
-Files should always end with a trailing newline.
+Files should always end with a trailing newline (but not with pointless blank lines).
 
-Lines with trailing spaces are almost always wrong.
+Lines with trailing spaces are almost always wrong, as is mixed indentation.
 
 It's ideal to check for these problems, either with a pre-commit hook or a pre-receive hook, to reject untidy changes, get editors fixed quickly and keep things neat so that a future person doesn't have to fix them later -- or deal with a messy diff when they're in the middle of trying to do a big unrelated automated change (for example).
 
+These little details (and whether people care about them) are also an interesting proxy for general code quality, in my opinion, so it can be interesting to measure them.
+
 This is not a Git hook, but is just a simple program for quickly checking a list of text files, which can be used as part of a Git hook.
+
+The `pre-commit` tool is a widely available easy way of doing that kind of thing, and while I wouldn't necessarily recommend it outright, config is included here for use with that.
 
 I'm using intentionally fun and nasty Perl (with Bourne shell unit tests) to celebrate and mourn the Old Ways.
 
