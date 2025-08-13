@@ -10,7 +10,8 @@ if [ -n "$out" ]; then
 	exit 1
 fi
 
-expected='tests/mixed-indent: mixed indentation, line 3
+expected='tests/ending-empty-lines: empty lines at end
+tests/mixed-indent: mixed indentation, line 3
 tests/mixed-indent-2: mixed indentation, line 6
 tests/noeol: missing final newline
 tests/trailing-spaces: trailing spaces, line 4'

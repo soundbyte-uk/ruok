@@ -4,12 +4,16 @@ my $alert_ts = 1;
 my $alert_ind = 1;
 my $bad = 0;
 my $indent = '';
+my $blanks = 0;
 
 while (<>) {
 	$alert_ts and m[ $] and print "${ARGV}: trailing spaces, line ${.}\n" and $bad=1 and $alert_ts=0;
 	$alert_ind and m[^(\s).*\n$] and $indent = ($indent || $1) and (($indent ne $1) or not m[^(\s)(\1*)(\S.*)?\n$]) and print "${ARGV}: mixed indentation, line ${.}\n" and $bad=1 and $alert_ind=0;
+	m[^$] and $blanks+=1 or $blanks=0;
 	m[\n$] or print "${ARGV}: missing final newline\n" and $bad=1;
 	$alert_ts=1 and $alert_ind=1 and $.=0 or $indent='' if eof;
+	$blanks and print "${ARGV}: empty lines at end\n" and $bad=1 if eof;
+	$blanks=0 if eof;
 }
 
 exit 1 if $bad;
