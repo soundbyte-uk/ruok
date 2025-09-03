@@ -1,5 +1,17 @@
 #!/usr/bin/env perl
 
+use strict;
+use warnings qw(all -syntax);
+	# i like assignments in conditionals / i like to live dangerously
+
+my $fix = 0;
+my %fix_files = ();
+
+if (@ARGV and $ARGV[0] eq '--fix') {
+	shift(@ARGV);
+	$fix = 1;
+}
+
 my $alert_ts = 1;
 my $alert_ind = 1;
 my $bad = 0;
@@ -7,13 +19,52 @@ my $indent = '';
 my $blanks = 0;
 
 while (<>) {
-	$alert_ts and m[ $] and print "${ARGV}: trailing spaces, line ${.}\n" and $bad=1 and $alert_ts=0;
-	$alert_ind and m[^(\s).*\n$] and $indent = ($indent || $1) and (($indent ne $1) or not m[^(\s)(\1*)(\S.*)?\n$]) and print "${ARGV}: mixed indentation, line ${.}\n" and $bad=1 and $alert_ind=0;
+	$alert_ts and m[ $]
+		and ($fix or print "${ARGV}: trailing spaces, line ${.}\n")
+		and ($fix and $fix_files{$ARGV}=1 or $bad=1) and $alert_ts=0;
+	$alert_ind and m[^(\s).*\n$] and $indent = ($indent || $1) and (($indent ne $1) or not m[^(\s)(\1*)(\S.*)?\n$])
+		and ($fix or print "${ARGV}: mixed indentation, line ${.}\n")
+		and ($fix and print "${ARGV}: mixed indentation (not auto-fixable!), line ${.}\n" or 1)
+		and $bad=1 and $alert_ind=0;
 	m[^$] and $blanks+=1 or $blanks=0;
-	m[\n$] or print "${ARGV}: missing final newline\n" and $bad=1;
-	$alert_ts=1 and $alert_ind=1 and $.=0 or $indent='' if eof;
-	$blanks and print "${ARGV}: empty lines at end\n" and $bad=1 if eof;
-	$blanks=0 if eof;
+	m[\n$]
+		or ($fix or print "${ARGV}: missing final newline\n")
+		and ($fix and $fix_files{$ARGV}=1 or $bad=1);
+
+	if (eof) {
+		$alert_ts=1 and $alert_ind=1 and $.=0 or $indent='';
+		$blanks
+			and ($fix or print "${ARGV}: empty lines at end\n")
+			and ($fix and $fix_files{$ARGV}=1 or $bad=1);
+		$blanks=0;
+	}
+}
+
+if ($fix) {
+	@ARGV = ();
+	foreach my $f (keys(%fix_files)) {
+		push @ARGV, $f;
+	}
+	$^I = '';  # enable inplace (-i) mode here and now! with no backup! exciting!
+	if (@ARGV) {
+		while (<>) {
+			s/\s*\n?\r?$/\n/;
+				# fixes trailing spaces, windowsness AND lacking trailing newline
+			if (m[^$]) {
+				$blanks+=1;
+			} else {
+				for(my $b=0; $b<$blanks; ++$b) {
+					print "\n";
+				}
+				$blanks=0;
+				print;
+			}
+			$blanks=0 if eof;
+		}
+	}
+	foreach my $f (keys(%fix_files)) {
+		print "$f: auto-fixed\n"
+	}
 }
 
 exit 1 if $bad;
