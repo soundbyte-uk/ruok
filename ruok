@@ -19,7 +19,7 @@ my $indent = '';
 my $blanks = 0;
 
 while (<>) {
-	$alert_ts and m[ $]
+	$alert_ts and m[[\t ]\r?\n\r?$]
 		and ($fix or print "${ARGV}: trailing spaces, line ${.}\n")
 		and ($fix and $fix_files{$ARGV}=1 or $bad=1) and $alert_ts=0;
 	$alert_ind and m[^(\s).*\n$] and $indent = ($indent || $1) and (($indent ne $1) or not m[^(\s)(\1*)(\S.*)?\n$])
@@ -40,6 +40,8 @@ while (<>) {
 	}
 }
 
+my $lineending = '';
+
 if ($fix) {
 	@ARGV = ();
 	foreach my $f (keys(%fix_files)) {
@@ -48,9 +50,11 @@ if ($fix) {
 	$^I = '';  # enable inplace (-i) mode here and now! with no backup! exciting!
 	if (@ARGV) {
 		while (<>) {
-			s/\s*\n?\r?$/\n/;
-				# fixes trailing spaces, windowsness AND lacking trailing newline
-			if (m[^$]) {
+			if ('' eq $lineending) {
+				m<([\r\n]+)$> and $lineending = $1 or $lineending = "\n";
+			}
+			s/\s*?(\r?\n?\r?)$/$lineending/;
+			if (m[^\r?\n?\r?$]) {
 				$blanks+=1;
 			} else {
 				for(my $b=0; $b<$blanks; ++$b) {
@@ -59,7 +63,10 @@ if ($fix) {
 				$blanks=0;
 				print;
 			}
-			$blanks=0 if eof;
+			if (eof) {
+				$blanks=0;
+				$lineending='';
+			}
 		}
 	}
 	foreach my $f (keys(%fix_files)) {
