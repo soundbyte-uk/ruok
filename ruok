@@ -4,74 +4,75 @@ use strict;
 use warnings qw(all -syntax);
 	# i like assignments in conditionals / i like to live dangerously
 
-my $fix = 0;
-my %fix_files = ();
+my $fix_mode_enabled = 0;
+my %files_to_fix_set = ();
 
 if (@ARGV and $ARGV[0] eq '--fix') {
 	shift(@ARGV);
-	$fix = 1;
+	$fix_mode_enabled = 1;
 }
 
-my $alert_ts = 1;
-my $alert_ind = 1;
-my $bad = 0;
-my $indent = '';
-my $blanks = 0;
+my $exit_error = 0;
+
+my $alert_trailing = 1;
+my $alert_indent = 1;
+my $indent_char = '';
+my $blank_lines = 0;
 
 while (<>) {
-	$alert_ts and m[[\t ]\r?\n\r?$]
-		and ($fix or print "${ARGV}: trailing spaces, line ${.}\n")
-		and ($fix and $fix_files{$ARGV}=1 or $bad=1) and $alert_ts=0;
-	$alert_ind and m[^(\s).*\n$] and $indent = ($indent || $1) and (($indent ne $1) or not m[^(\s)(\1*)(\S.*)?\n$])
-		and ($fix or print "${ARGV}: mixed indentation, line ${.}\n")
-		and ($fix and print "${ARGV}: mixed indentation (not auto-fixable!), line ${.}\n" or 1)
-		and $bad=1 and $alert_ind=0;
-	m[^$] and $blanks+=1 or $blanks=0;
+	$alert_trailing and m[[\t ]\r?\n\r?$]
+		and ($fix_mode_enabled or print "${ARGV}: trailing spaces, line ${.}\n")
+		and ($fix_mode_enabled and $files_to_fix_set{$ARGV}=1 or $exit_error=1) and $alert_trailing=0;
+	$alert_indent and m[^(\s).*\n$] and $indent_char = ($indent_char || $1) and (($indent_char ne $1) or not m[^(\s)(\1*)(\S.*)?\n$])
+		and ($fix_mode_enabled or print "${ARGV}: mixed indentation, line ${.}\n")
+		and ($fix_mode_enabled and print "${ARGV}: mixed indentation (not auto-fixable!), line ${.}\n" or 1)
+		and $exit_error=1 and $alert_indent=0;
+	m[^$] and $blank_lines+=1 or $blank_lines=0;
 	m[\n$]
-		or ($fix or print "${ARGV}: missing final newline\n")
-		and ($fix and $fix_files{$ARGV}=1 or $bad=1);
+		or ($fix_mode_enabled or print "${ARGV}: missing final newline\n")
+		and ($fix_mode_enabled and $files_to_fix_set{$ARGV}=1 or $exit_error=1);
 
 	if (eof) {
-		$alert_ts=1 and $alert_ind=1 and $.=0 or $indent='';
-		$blanks
-			and ($fix or print "${ARGV}: empty lines at end\n")
-			and ($fix and $fix_files{$ARGV}=1 or $bad=1);
-		$blanks=0;
+		$alert_trailing=1 and $alert_indent=1 and $.=0 or $indent_char='';
+		$blank_lines
+			and ($fix_mode_enabled or print "${ARGV}: empty lines at end\n")
+			and ($fix_mode_enabled and $files_to_fix_set{$ARGV}=1 or $exit_error=1);
+		$blank_lines=0;
 	}
 }
 
-my $lineending = '';
+my $line_ending_chars = '';
 
-if ($fix) {
+if ($fix_mode_enabled) {
 	@ARGV = ();
-	foreach my $f (keys(%fix_files)) {
+	foreach my $f (keys(%files_to_fix_set)) {
 		push @ARGV, $f;
 	}
 	$^I = '';  # enable inplace (-i) mode here and now! with no backup! exciting!
 	if (@ARGV) {
 		while (<>) {
-			if ('' eq $lineending) {
-				m<([\r\n]+)$> and $lineending = $1 or $lineending = "\n";
+			if ('' eq $line_ending_chars) {
+				m<([\r\n]+)$> and $line_ending_chars = $1 or $line_ending_chars = "\n";
 			}
-			s/\s*?(\r?\n?\r?)$/$lineending/;
+			s/\s*?(\r?\n?\r?)$/$line_ending_chars/;
 			if (m[^\r?\n?\r?$]) {
-				$blanks+=1;
+				$blank_lines+=1;
 			} else {
-				for(my $b=0; $b<$blanks; ++$b) {
+				for(my $b=0; $b<$blank_lines; ++$b) {
 					print "\n";
 				}
-				$blanks=0;
+				$blank_lines=0;
 				print;
 			}
 			if (eof) {
-				$blanks=0;
-				$lineending='';
+				$blank_lines=0;
+				$line_ending_chars='';
 			}
 		}
 	}
-	foreach my $f (keys(%fix_files)) {
+	foreach my $f (keys(%files_to_fix_set)) {
 		print "$f: auto-fixed\n"
 	}
 }
 
-exit 1 if $bad;
+exit 1 if $exit_error;
