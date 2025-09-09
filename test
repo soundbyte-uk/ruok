@@ -1,5 +1,7 @@
 #!/bin/sh
 
+rm -rf ./tests-tmp
+
 out=`./ruok tests/legit* tests/dos-good`
 if [ $? -ne 0 ]; then
 	>&2 echo "Legitness test failed to exit 0"
@@ -28,3 +30,21 @@ if [ "$out" != "$expected" ]; then
 	>&2 echo "Problem tests did not produce expected output"
 	exit 1
 fi
+
+cp -r tests/ tests-tmp/
+./ruok --fix tests-tmp/*
+
+expected='tests-tmp/mixed-indent: mixed indentation, line 3
+tests-tmp/mixed-indent-2: mixed indentation, line 6'
+
+out=`./ruok tests-tmp/*`
+if [ $? -ne 1 ]; then
+	>&2 echo "Post-fix tests failed to exit 1"
+	exit 1
+fi
+if [ "$out" != "$expected" ]; then
+	>&2 echo "Post-fix tests did not produce expected output"
+	exit 1
+fi
+
+rm -rf ./tests-tmp
