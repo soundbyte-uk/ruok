@@ -59,7 +59,7 @@ if ($fix_mode_enabled) {
 				$blank_lines+=1;
 			} else {
 				for(my $b=0; $b<$blank_lines; ++$b) {
-					print "\n";
+					print $line_ending_chars;
 				}
 				$blank_lines=0;
 				print;

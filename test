@@ -12,7 +12,7 @@ if [ -n "$out" ]; then
 	exit 1
 fi
 
-expected='tests/dos: trailing spaces, line 2
+expected='tests/dos: trailing spaces, line 3
 tests/dos-noeol: missing final newline
 tests/ending-empty-lines: empty lines at end
 tests/mixed-indent: mixed indentation, line 3
