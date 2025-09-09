@@ -4,3 +4,10 @@
   entry: ./ruok
   language: script
   stages: [pre-commit, pre-push, manual]
+
+- id: fix-text-files
+  name: fixes badly-formatted text files
+  description: fixes badly-formatted text files
+  entry: ./ruok --fix
+  language: script
+  stages: [pre-commit, pre-push, manual]
