@@ -6,6 +6,8 @@ Files should always end with a trailing newline (but not with pointless blank li
 
 Lines with trailing spaces are almost always wrong, as is mixed indentation.
 
+(Deviations from these rules are literally 'noise', in the sense that they show up but do not contain any useful information.)
+
 It's ideal to check for these problems, either with a pre-commit hook or a pre-receive hook, to reject untidy changes, get editors fixed quickly and keep things neat so that a future person doesn't have to fix them later -- or deal with a messy diff when they're in the middle of trying to do a big unrelated automated change (for example).
 
 These little details (and whether people care about them) are also an interesting proxy for general code quality, in my opinion, so it can be interesting to measure them.
